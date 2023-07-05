@@ -2,14 +2,14 @@ pipeline{
     agent any
     environment{
         apiRegistry = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api"
-        api_image_Registry = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com"
+        api_image_Registry = "https://894325874.dkr.ecr.eu-west-2.amazonaws.com"
         registryCredential = "ecr:eu-west-2:awscd"
         DOCKER_REGISTRY = "registryUrl"
         AWS_ACCESS_KEY_ID = "accessKeyId"
-        AWS_SECRET_ACCESS_KEY = "uvevTMHUiegdoA7dzxYAWcF3QfsvAtH14pDjawrI"
+        AWS_SECRET_ACCESS_KEY = "uvevTMHUiegfsvAtH14pDjawrI"
         registryUrl = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api"
-        accessKeyId = "AKIA5AOFBZ2ZIHIYYC7I"
-        secretAccessKey = "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"
+        accessKeyId = "AKIA5HIYYC7I"
+        secretAccessKey = "uvevTMHUiQfsvAtH14pDjawrI"
         cluster = "api-waverlite-com-cluster"
         service = "api-live-waverlite-com-service"
         DOCKER_IMAGE_NAME = "dummy_api"
@@ -41,7 +41,7 @@ pipeline{
             steps{
                     
                 sh 'docker build -t dummy_api:latest .'
-                sh 'docker tag dummy_api:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api:latest'
+                sh 'docker tag dummy_api:latest 8943325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api:latest'
                 
               
            }
