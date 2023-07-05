@@ -66,7 +66,7 @@ pipeline {
                           //verbose: true,
                           //transfers: [
                               //sshTransfer(
-                                  //execCommand: 'cd /var/www/html/ && sudo rm -rf /var/www/html/* && sudo git clone https://waverlite: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@github.com/waverlite/console.git && sudo mv console/* .',
+                                  //execCommand: 'cd /var/www/html/ && sudo rm -rf /var/www/html/* && sudo git clone https://waverlite:ghp_TpiMEfZOkRuP8pSo98bQy1YmxqS@github.com/waverlite/console.git && sudo mv console/* .',
                                   //execTimeout: 120000,
                                   //flatten: false
                               //)
@@ -94,7 +94,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Use AWS credentials to execute AWS CLI
-                withEnv(['AWS_ACCESS_KEY_ID=AKIA5YYC7I', 'AWS_SECRET_ACCESS_KEY=uvevTMHUiegdoA14pDjawrI']) {
+                withEnv(['AWS_ACCESS_KEY_ID=AKIA5YYC7I', 'AWS_SECRET_ACCESS_KEY=uiegdoA1DjawrI']) {
                       sh('''aws sts get-caller-identity
                              eb --version
                              eb use app-waverlite-com-prod-env
