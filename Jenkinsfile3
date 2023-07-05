@@ -1,0 +1,113 @@
+pipeline {
+    agent any
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+       
+    }
+    
+    // Define environment variables
+    environment {
+        AWS_DEFAULT_REGION = "eu-west-2"
+        //AWS_EB_APPLICATION_NAME = "waverlite-console-application///////"
+        //AWS_EB_ENVIRONMENT_NAME = "Waverliteconsoleapplication-env"
+        STAGING_INSTANCE_IP = "13.40.176.152"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from the Git repository
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/console.git']]])
+            }
+        }
+        
+        stage('test'){
+            steps{
+                sh '''
+                    find . -name "*.php" -print0 | while IFS= read -r -d '' file; do
+                        php -l "$file"
+                    done
+                   
+                '''
+            }
+        } 
+
+
+        stage('Build') {
+            steps {
+                // Check PHP syntax and create deployment directory
+                //sh 'php -l index.php'
+                script {
+                    if (!fileExists('dist')) {
+                        sh 'mkdir dist'
+                    }
+                }
+                // Copy files to deployment directory and package the application
+                sh 'sudo rsync -av --exclude=Jenkinsfile --exclude=index.php Jenkinsfile account assets business cHook compliance crypto dashboard dispute images index.php js official report scss service setup signin system dist/'
+                sh 'tar -czvf app.tar.gz dist/'
+            }
+        }
+        
+        
+        //stage('deploy to staging') {
+            //steps {
+                // Use AWS credentials to execute AWS CLI 
+                //withEnv(['AWS_ACCESS_KEY_ID=AKIA5AOFBZ2ZIHIYYC7I', 'AWS_SECRET_ACCESS_KEY=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']) {
+                      //sh('''aws sts get-caller-identity
+                             //aws --version
+                             //eb --version
+                             //eb use Waverliteconsoleapplication-env
+                             //eb deploy''')
+                        
+                //}
+                //}
+            //}
+        //}
+        
+        
+        //stage('Approve Production Deployment') {
+            //steps {
+                //timeout(time: 1, unit: 'MINUTES'){
+                    //input (
+                       //'Do you want to deploy to production?'
+                    //)
+                //}
+            //}
+        //}
+                
+
+        stage('Deploy') {
+            steps {
+                // Use AWS credentials to execute AWS CLI 
+                withEnv(['AWS_ACCESS_KEY_ID=AKIA5AOFBZ2ZIHIYYC7I', 'AWS_SECRET_ACCESS_KEY=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']) {
+                      sh('''aws sts get-caller-identity
+                             aws --version
+                             eb --version
+                             eb use console-waverlite-com-prod-env	
+                             eb deploy''')
+                        
+                //}
+                }
+              
+                // Set AWS credentials as environment variables and deploy the application to Elastic Beanstalk
+                //script {
+                    //env.AWS_ACCESS_KEY_ID = "${AWS_ACCESS_KEY_ID}"
+                    //env.AWS_SECRET_ACCESS_KEY = "${AWS_SECRET_ACCESS_KEY}"
+
+                    //ebCreateApplication applicationName: env.AWS_EB_APPLICATION_NAME, description: "v-${env.BUILD_NUMBER}"
+                    //ebDeploy(environmentName: env.AWS_EB_ENVIRONMENT_NAME, versionLabel: "v-${env.BUILD_NUMBER}")
+                //}
+            }
+        }
+       
+    }
+    
+    //post {
+        //failure {
+            //echo "The deployment was not approved. Triggering a new build."
+            //build job: "${JOB_NAME}", propagate: false, wait: true
+        //}
+    //}
+}
