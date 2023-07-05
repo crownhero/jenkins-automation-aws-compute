@@ -1,0 +1,85 @@
+pipeline{
+    agent any
+    environment{
+        apiRegistry = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api"
+        api_image_Registry = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com"
+        registryCredential = "ecr:eu-west-2:awscd"
+        DOCKER_REGISTRY = "registryUrl"
+        AWS_ACCESS_KEY_ID = "accessKeyId"
+        AWS_SECRET_ACCESS_KEY = "uvevTMHUiegdoA7dzxYAWcF3QfsvAtH14pDjawrI"
+        registryUrl = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api"
+        accessKeyId = "AKIA5AOFBZ2ZIHIYYC7I"
+        secretAccessKey = "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"
+        cluster = "api-waverlite-com-cluster"
+        service = "api-live-waverlite-com-service"
+        DOCKER_IMAGE_NAME = "dummy_api"
+        taskDefinition = "api-core-waverlite-com-task-definition" 
+        
+    }
+    
+    stages{
+        stage('fetch'){
+            steps {
+                // Checkout code from the Git repository
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/Core.git']]])
+           }
+        
+        }
+        
+        stage('test'){
+            steps{
+                sh '''
+                    find . -name "*.php" -print0 | while IFS= read -r -d '' file; do
+                        php -l "$file"
+                    done
+                   
+                '''
+            }
+        } 
+        
+        stage('build api image'){
+            steps{
+                    
+                sh 'docker build -t dummy_api:latest .'
+                sh 'docker tag dummy_api:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api:latest'
+                
+              
+           }
+        }
+        
+        stage('upload image to Amazon ECR') {
+            steps {
+                //sh 'aws --profile myawswaverliteprofile sts get-caller-identity'
+                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api:latest'
+                
+            }
+        }
+        
+       
+        stage('deploy to Amazon ECS') {
+            steps {
+                //sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+            //}
+           
+                   //sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                sh 'aws --profile myawswaverliteprofile ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+
+                
+            }
+             //steps {
+                //script {
+                      //withAWS(credentials: 'awscd', region: 'eu-west-2') {
+                    // Deploy to ECS using the AWS ECS Plugin
+                           //ecsUpdateService(
+                                  //cluster: 'api-waverlite-com-cluster',
+                                  //service: 'api-core-waverlite-svc',
+                                  //image: "${env.api_image_Registry}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                           //)
+                      //}
+                 //}
+             //}
+             
+        }
+                
+    }
+}
