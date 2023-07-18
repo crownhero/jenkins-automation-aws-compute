@@ -1,0 +1,59 @@
+pipeline{
+    
+    agent any
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+    
+    environment {
+        KEY_FILE_PATH = "/var/jenkins_home/.ssh/waverlite-new-instance.pem"
+        APPLICATION_PATH = "/var/jenkins_home/workspace/waverlite-com"
+        SSH_USER = "ubuntu"
+        EC2_INSTANCE_IP = "18.137.50.142"
+    }
+    
+    stages {
+        stage ('checkout'){
+            steps {
+                // Checkout code from the Git repository
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite:ghp_tQUxv7HsOd85Mh5vps2Zt4k6@github.com/waverlite/Website.git']]])
+            }
+        }
+
+        stage ('build') {
+            steps {
+                script {
+                    if (!fileExists('dist')) {
+                        sh 'mkdir dist'
+                    }
+                }
+                // Copy files to deployment directory and package the application
+                sh 'rsync -av --exclude=Jenkinsfile  Jenkinsfile _next business images personal website_api .htaccess 404.html about.html aml-kyc.html contact.html giftcards.html index.html privacy-policy.html team.html terms-conditions.html waverlite-api.html dist/'
+                sh 'tar -czvf website.tar.gz dist/'
+            }
+        }
+
+        stage('Deploy to production') {
+            steps {
+                sshagent(['e59b4ff2-0fad-469e-82c2-6a1664790b7e']) {
+                sh "whoami"
+                sh "scp -i $KEY_FILE_PATH -r $APPLICATION_PATH/* $SSH_USER@$EC2_INSTANCE_IP:/var/www/html/"
+                sh "scp -i $KEY_FILE_PATH -r $APPLICATION_PATH/.htaccess $SSH_USER@$EC2_INSTANCE_IP:/var/www/html/"
+                //sshCommand remote: "ssh -o StrictHostKeyChecking=no $SSH_USER@$EC2_INSTANCE_IP", command: 'sudo systemctl restart apache2'
+                //sh "sudo systemctl restart apache2"
+                }
+            }
+        }
+
+        
+
+
+        
+        
+    }
+}
+
+
+//note: KEY_FILE_PATH is the path to the ec2 instance private key (the instance jenkins is deploying to). Also note that the jenkins server public key must be on the ec2 instance jenkins is trying to deploy to.
