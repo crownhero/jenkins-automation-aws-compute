@@ -6,10 +6,10 @@ pipeline{
         registryCredential = "ecr:eu-west-2:awscd"
         DOCKER_REGISTRY = "registryUrl"
         AWS_ACCESS_KEY_ID = "accessKeyId"
-        AWS_SECRET_ACCESS_KEY = "uvevTMHUiegfsvAtH14pDjawrI"
+        AWS_SECRET_ACCESS_KEY = ""
         registryUrl = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api"
         accessKeyId = "AKIA5HIYYC7I"
-        secretAccessKey = "uvevTMHUiQfsvAtH14pDjawrI"
+        secretAccessKey = ""
         cluster = "api-waverlite-com-cluster"
         service = "api-live-waverlite-com-service"
         DOCKER_IMAGE_NAME = "dummy_api"
@@ -21,7 +21,7 @@ pipeline{
         stage('fetch'){
             steps {
                 // Checkout code from the Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/Core.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite:@github.com/waverlite/Core.git']]])
            }
         
         }
@@ -50,7 +50,7 @@ pipeline{
         stage('upload image to Amazon ECR') {
             steps {
                 //sh 'aws --profile myawswaverliteprofile sts get-caller-identity'
-                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/waverlite_api:latest'
+                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/wave_api:latest'
                 
             }
         }
