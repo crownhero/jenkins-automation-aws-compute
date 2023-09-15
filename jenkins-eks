@@ -1,0 +1,74 @@
+pipeline {
+    agent any 
+
+    environment {
+        registryUrl = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com"
+        registry = "894303325874.dkr.ecr.eu-west-2.amazonaws.com"
+        ecr_repo_name = "api-core-waverlite-com"
+        AWS_REGION            = "eu-west-2"
+        EKS_CLUSTER_NAME      = 'test-eks-1'
+    }
+
+    stages {
+        stage('fetch'){
+            steps {
+                script {
+                    // Retrieving the Git access token from Jenkins credentials
+                    withCredentials([string(credentialsId: 'git', variable: 'GIT_ACCESS_TOKEN')]) {
+                        // Set the Git URL with the access token as part of the URL
+                        def gitUrlWithToken = "https://waverlite:${GIT_ACCESS_TOKEN}@github.com/waverlite/Core.git"
+        
+                        // Checkout code from the Git repository
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: gitUrlWithToken]]])
+                    }
+                }
+            }
+        }
+
+        stage('test'){
+            steps{
+                sh '''
+                    find . -name "*.php" -print0 | while IFS= read -r -d '' file; do
+                        php -l "$file"
+                    done
+                   
+                '''
+            }
+        } 
+
+        stage('build api image'){
+            steps{
+                    
+                sh 'docker build --no-cache --tag core_api:latest .'
+                sh 'docker tag core_api:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com'
+                
+              
+           }
+        }
+
+        stage('upload image to Amazon ECR') {
+            steps {
+                //sh 'aws --profile myawswaverliteprofile sts get-caller-identity'
+                sh 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 894303325874.dkr.ecr.eu-west-2.amazonaws.com > /dev/null'
+                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+                
+            }
+        }
+
+        stage('remove api core image'){
+           steps {
+              sh 'docker rmi 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+           }
+        }
+
+        
+
+        
+        stage('Deploy to EKS') {
+          agent {label 'KOPS'}
+            steps {
+              sh "helm upgrade --install --force --recreate-pods redbiller-stack helm/redbiller-eks-charts --set apicoreimage=894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest --namespace prod"
+            }
+          }
+        }
+    }
