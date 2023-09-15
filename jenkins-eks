@@ -1,5 +1,11 @@
 pipeline {
     agent any 
+    
+    options {
+            buildDiscarder(logRotator(numToKeepStr: '10'))
+            disableConcurrentBuilds()
+    
+    }
 
     environment {
         registryUrl = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com"
