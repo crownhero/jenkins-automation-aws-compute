@@ -1,10 +1,10 @@
 pipeline {
     agent any 
-    
+   
     options {
-            buildDiscarder(logRotator(numToKeepStr: '10'))
-            disableConcurrentBuilds()
-    
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+
     }
 
     environment {
@@ -63,9 +63,11 @@ pipeline {
 
         stage('remove api core image'){
            steps {
-              sh 'docker rmi 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+              sh 'docker rmi -f 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+              sh 'docker rmi -f core_api:latest'
            }
-        }
+         }
+
 
         
 
@@ -73,7 +75,10 @@ pipeline {
         stage('Deploy to EKS') {
           agent {label 'KOPS'}
             steps {
-              sh "helm upgrade --install --force --recreate-pods redbiller-stack helm/redbiller-eks-charts --set apicoreimage=894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest --namespace prod"
+              sh "kubectl delete pods -n prod -l myapp=delete-me"
+
+
+              sh "helm upgrade --install --force redbiller-stack helm/redbiller-eks-charts --set apicoreimage=894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest --namespace prod"
             }
           }
         }
