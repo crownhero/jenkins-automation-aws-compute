@@ -1,0 +1,97 @@
+pipeline{
+    agent any
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+
+    }
+    environment{
+        apiRegistry = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-svc"
+        api_image_Registry = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com"
+        registryCredential = "ecr:eu-west-2:awscd"
+        DOCKER_REGISTRY = "registryUrl"
+        registryUrl = "https://894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite"
+        cluster = "api-waverlite-com-cluster"
+        service = "api-core-waverlite-svc"
+        DOCKER_IMAGE_NAME = "test_api"
+        
+        
+    }
+    
+    
+    stages{
+        stage('fetch'){
+            steps {
+                script {
+                    // Retrieving the Git access token from Jenkins credentials
+                    withCredentials([string(credentialsId: 'git', variable: 'GIT_ACCESS_TOKEN')]) {
+                        // Set the Git URL with the access token as part of the URL
+                        def gitUrlWithToken = "https://waverlite:${GIT_ACCESS_TOKEN}@github.com/waverlite/Core.git"
+        
+                        // Checkout code from the Git repository
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: gitUrlWithToken]]])
+                    }
+                }
+             }
+        
+        }
+        
+        stage('test'){
+            steps{
+                sh '''
+                    find . -name "*.php" -print0 | while IFS= read -r -d '' file; do
+                        php -l "$file"
+                    done
+                   
+                '''
+            }
+        } 
+        
+        stage('build api image'){
+            steps{
+                    
+                sh 'docker build --no-cache --tag test_apis:latest .'
+                sh 'docker tag test_apis:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+                
+              
+           }
+        }
+        
+        stage('upload image to Amazon ECR') {
+            steps {
+                //sh 'aws --profile myawswaverliteprofile sts get-caller-identity'
+                sh 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 894303325874.dkr.ecr.eu-west-2.amazonaws.com > /dev/null'
+                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+                
+            }
+        }
+
+        stage('Delete api-core image') {
+            steps {
+                sh 'docker rmi -f 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+                sh 'docker rmi -f test_apis:latest'
+            }
+        }
+
+        
+
+        
+       
+        stage('deploy to Amazon ECS') {
+            steps {
+                //sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+            //}
+           
+                   //sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                sh 'aws --profile awsjenkinsprofile ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                
+                 
+                
+            }
+             
+             
+        }
+                
+    }
+}
