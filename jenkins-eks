@@ -78,7 +78,7 @@ pipeline {
               sh "kubectl delete pods -n prod -l myapp=delete-me"
 
 
-              sh "helm upgrade --install --force str-stack helm/redbiller-eks-charts --set apicoreimage=4567898456765.dkr.ecr.eu-west-1.amazonaws.com/api-com:latest --namespace prod"
+              sh "helm upgrade --install --force str-stack helm/eks-charts --set apicoreimage=4567898456765.dkr.ecr.eu-west-1.amazonaws.com/api-com:latest --namespace prod"
             }
           }
         }
