@@ -2,18 +2,18 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_REGISTRY = 'waverlite-com'
-        DOCKER_IMAGE_NAME = 'waverlite-com'
-        EC2_INSTANCE = '18.130.49.142'
-        DOCKER_REPO_URL = '894303325874.dkr.ecr.eu-west-2.amazonaws.com'
-        CONTAINER_NAME = 'waverlite-com-prod'
+        DOCKER_REGISTRY = 'str-com'
+        DOCKER_IMAGE_NAME = 'str-com'
+        EC2_INSTANCE = '56.98.12.56'
+        DOCKER_REPO_URL = '4567898456765.dkr.ecr.eu-west-1.amazonaws.com'
+        CONTAINER_NAME = 'str-com-prod'
     }
 
     stages {
         stage ('checkout'){
             steps {
                 // Checkout code from the waverlite organisation Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/Website.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://str:<secrets>@github.com/str/Website.git']]])
             }
         }
 
@@ -21,15 +21,15 @@ pipeline {
             steps {
                 //Build the docker image
                 sh 'docker build --no-cache --tag ${DOCKER_IMAGE_NAME}:latest .'
-                sh 'docker tag ${DOCKER_IMAGE_NAME}:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/${DOCKER_REGISTRY}:latest'
+                sh 'docker tag ${DOCKER_IMAGE_NAME}:latest 4567898456765.dkr.ecr.eu-west-1.amazonaws.com/${DOCKER_REGISTRY}:latest'
             }
         }
         
         stage('Push Docker Image') {
             steps {
                 // Push the Docker image to  AWS ECR
-                sh 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 894303325874.dkr.ecr.eu-west-2.amazonaws.com > /dev/null'
-                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/${DOCKER_REGISTRY}:latest'
+                sh 'aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 4567898456765.dkr.ecr.eu-west-1.amazonaws.com > /dev/null'
+                sh 'docker push 4567898456765.dkr.ecr.eu-west-1.amazonaws.com/${DOCKER_REGISTRY}:latest'
             }
         }
        
@@ -37,19 +37,19 @@ pipeline {
             steps {
                 // Remove the local Docker images
                 sh 'docker rmi ${DOCKER_IMAGE_NAME}:latest'
-                sh 'docker rmi 894303325874.dkr.ecr.eu-west-2.amazonaws.com/${DOCKER_REGISTRY}:latest'
+                sh 'docker rmi 4567898456765.dkr.ecr.eu-west-1.amazonaws.com/${DOCKER_REGISTRY}:latest'
             }
         }
 
         stage('Deploy to EC2') {
             steps {
                 // SSH into the EC2 instance
-                sshagent(['e59b4ff2-0fad-469e-82c2-6a1664790b7e']) {
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 894303325874.dkr.ecr.eu-west-2.amazonaws.com > /dev/null'"
+                sshagent(['e59b4ff2-0fad-469e-82c2-0b7e']) {
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 4567898456765.dkr.ecr.eu-west-1.amazonaws.com > /dev/null'"
                     sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'docker pull ${DOCKER_REPO_URL}/${DOCKER_IMAGE_NAME}:latest'"
                     sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'docker stop ${CONTAINER_NAME} || true'"
                     sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'docker rm ${CONTAINER_NAME} || true'"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'docker run -d --rm --name ${CONTAINER_NAME} -p 80:80 -v waverlite-com-vol:/var/www/html ${DOCKER_REPO_URL}/${DOCKER_IMAGE_NAME}:latest'"
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE} 'docker run -d --rm --name ${CONTAINER_NAME} -p 80:80 -v str-com-vol:/var/www/html ${DOCKER_REPO_URL}/${DOCKER_IMAGE_NAME}:latest'"
                 }
             }
         }
@@ -61,10 +61,10 @@ pipeline {
                 currentBuild.result = 'FAILURE'
 
             
-                def failureRecipients = "oluwademilade206@@gmail.com,crownheroe@gmail.com"
+                def failureRecipients = "ftrw@gmail.com,ghxh@gmail.com"
 
                 
-                def changeAuthor = env.CHANGE_AUTHOR ?: 'oluwademilade206@@gmail.com'
+                def changeAuthor = env.CHANGE_AUTHOR ?: 'ftrw@gmail.com'
 
                 // Check if the current user is in the list
                 if (failureRecipients.contains(changeAuthor)) {
@@ -87,7 +87,7 @@ pipeline {
         success {
              script {
                 
-               def successRecipients = "oluwademilade206@@gmail.com,crownheroe@gmail.com"
+               def successRecipients = "ftrw@gmail.com,ghxh@gmail.com"
 
                   emailext(
                      subject: "Success: Job ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
