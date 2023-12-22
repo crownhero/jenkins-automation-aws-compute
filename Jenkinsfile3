@@ -10,16 +10,16 @@ pipeline {
     // Define environment variables
     environment {
         AWS_DEFAULT_REGION = "eu-west-2"
-        //AWS_EB_APPLICATION_NAME = "waverlite-console-application///////"
-        //AWS_EB_ENVIRONMENT_NAME = "Waverliteconsoleapplication-env"
-        STAGING_INSTANCE_IP = "13.40.176.152"
+        //AWS_EB_APPLICATION_NAME = console-application///////"
+        //AWS_EB_ENVIRONMENT_NAME = "consoleapplication-env"
+        STAGING_INSTANCE_IP = "56.87.45,34"
     }
     
     stages {
         stage('Checkout') {
             steps {
                 // Checkout code from the Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/console.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://str:<secrets>@github.com/str/console.git']]])
             }
         }
         
@@ -54,11 +54,11 @@ pipeline {
         //stage('deploy to staging') {
             //steps {
                 // Use AWS credentials to execute AWS CLI 
-                //withEnv(['AWS_ACCESS_KEY_ID=AKIA5A2ZIHIY', 'AWS_SECRET_ACCESS_KEY=uvevA7dzxYAWcF3QfsvAtH14pDj']) {
+                //withEnv(['AWS_ACCESS_KEY_ID=<secrets>', 'AWS_SECRET_ACCESS_KEY=<secrets>']) {
                       //sh('''aws sts get-caller-identity
                              //aws --version
                              //eb --version
-                             //eb use Waverliteconsoleapplication-env
+                             //eb use consoleapplication-env
                              //eb deploy''')
                         
                 //}
@@ -81,11 +81,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Use AWS credentials to execute AWS CLI 
-                withEnv(['AWS_ACCESS_KEY_ID=AKIA5AOFBZ2ZIHIYYC7I', 'AWS_SECRET_ACCESS_KEY=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']) {
+                withEnv(['AWS_ACCESS_KEY_ID=<secrets>', 'AWS_SECRET_ACCESS_KEY=<secrets>']) {
                       sh('''aws sts get-caller-identity
                              aws --version
                              eb --version
-                             eb use console-waverlite-com-prod-env	
+                             eb use console-prod-env	
                              eb deploy''')
                         
                 //}
