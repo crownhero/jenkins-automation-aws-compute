@@ -8,17 +8,17 @@ pipeline{
     }
     
     environment {
-        KEY_FILE_PATH = "/var/jenkins_home/.ssh/waverlite-new-instance.pem"
-        APPLICATION_PATH = "/var/jenkins_home/workspace/waverlite-com"
+        KEY_FILE_PATH = "/var/jenkins_home/.ssh/str-instance.pem"
+        APPLICATION_PATH = "/var/jenkins_home/workspace/str-com"
         SSH_USER = "ubuntu"
-        EC2_INSTANCE_IP = "18.137.50.142"
+        EC2_INSTANCE_IP = "34.65.76.12"
     }
     
     stages {
         stage ('checkout'){
             steps {
                 // Checkout code from the Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite:ghp_tQUxv7HsOd85Mh5vps2Zt4k6@github.com/waverlite/Website.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://str:<secrets>@github.com/str/Website.git']]])
             }
         }
 
@@ -30,14 +30,14 @@ pipeline{
                     }
                 }
                 // Copy files to deployment directory and package the application
-                sh 'rsync -av --exclude=Jenkinsfile  Jenkinsfile _next business images personal website_api .htaccess 404.html about.html aml-kyc.html contact.html giftcards.html index.html privacy-policy.html team.html terms-conditions.html waverlite-api.html dist/'
+                sh 'rsync -av --exclude=Jenkinsfile  Jenkinsfile _next business images personal website_api .htaccess 404.html about.html aml-kyc.html contact.html giftcards.html index.html privacy-policy.html team.html terms-conditions.html api.html dist/'
                 sh 'tar -czvf website.tar.gz dist/'
             }
         }
 
         stage('Deploy to production') {
             steps {
-                sshagent(['e59b4ff2-0fad-469e-82c2-6a1664790b7e']) {
+                sshagent(['e59b4ff2-0fad-469e-82c2-7e']) {
                 sh "whoami"
                 sh "scp -i $KEY_FILE_PATH -r $APPLICATION_PATH/* $SSH_USER@$EC2_INSTANCE_IP:/var/www/html/"
                 sh "scp -i $KEY_FILE_PATH -r $APPLICATION_PATH/.htaccess $SSH_USER@$EC2_INSTANCE_IP:/var/www/html/"
