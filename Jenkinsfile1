@@ -10,16 +10,16 @@ pipeline {
     // Define environment variables
     environment {
         AWS_DEFAULT_REGION = "eu-west-2"
-        AWS_EB_APPLICATION_NAME = "App-waverlite-com-New"
-        AWS_EB_ENVIRONMENT_NAME = "Appwaverlitecomnew-env"
-        STAGING_INSTANCE_IP = "13.40.226.98"
+        AWS_EB_APPLICATION_NAME = "app-new"
+        AWS_EB_ENVIRONMENT_NAME = "appnew-env"
+        STAGING_INSTANCE_IP = "23.87.87.12"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 // Checkout code from the Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://waverlite: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@github.com/waverlite/Web.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://str:<secrets>@github.com/str/Web.git']]])
             }
         }
         stage('Test') {
@@ -47,12 +47,12 @@ pipeline {
 
         //stage('deploy to staging') {
             //steps{
-                 //withCredentials([sshUserPrivateKey(credentialsId: 'a92e516c-1cc8-4951-8d9f-9ed13ec2fad6', keyFileVariable: '')]) {
+                 //withCredentials([sshUserPrivateKey(credentialsId: 'a92e516c-1cc8-4ec2fad6', keyFileVariable: '')]) {
 
                     //sh "sudo scp -v -o StrictHostKeyChecking=no -r . ubuntu@${STAGING_INSTANCE_IP}:/var/www/html"
                     //sh 'whoami'
                 //}
-                //sshagent(credentials: ['a92e516c-1cc8-4951-8d9f-9ed13ec2fad6'], ignoreMissing: true) {
+                //sshagent(credentials: ['a92e516c-1cc8-fad6'], ignoreMissing: true) {
 
                         //sh "sudo scp -v -o StrictHostKeyChecking=no -r assets ubuntu@${STAGING_INSTANCE_IP}:/var/www/html"
 
@@ -66,7 +66,7 @@ pipeline {
                           //verbose: true,
                           //transfers: [
                               //sshTransfer(
-                                  //execCommand: 'cd /var/www/html/ && sudo rm -rf /var/www/html/* && sudo git clone https://waverlite:ghp_TpiMEfZOkRuP8pSo98bQy1YmxqS@github.com/waverlite/console.git && sudo mv console/* .',
+                                  //execCommand: 'cd /var/www/html/ && sudo rm -rf /var/www/html/* && sudo git clone https://str:<secrets>@github.com/str/console.git && sudo mv console/* .',
                                   //execTimeout: 120000,
                                   //flatten: false
                               //)
@@ -103,7 +103,7 @@ pipeline {
                       
                     sh('''aws sts get-caller-identity
                              eb --version
-                             eb use app-waverlite-com-prod-env
+                             eb use app-prod-env
                              eb deploy''')
 
                 
