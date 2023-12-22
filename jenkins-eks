@@ -8,10 +8,10 @@ pipeline {
     }
 
     environment {
-        registryUrl = "894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com"
-        registry = "894303325874.dkr.ecr.eu-west-2.amazonaws.com"
-        ecr_repo_name = "api-core-waverlite-com"
-        AWS_REGION            = "eu-west-2"
+        registryUrl = "4567898456765.dkr.ecr.eu-west-2.amazonaws.com/api"
+        registry = "4567898456765.dkr.ecr.eu-west-1.amazonaws.com"
+        ecr_repo_name = "api-com"
+        AWS_REGION            = "eu-west-1"
         EKS_CLUSTER_NAME      = 'test-eks-1'
     }
 
@@ -22,7 +22,7 @@ pipeline {
                     // Retrieving the Git access token from Jenkins credentials
                     withCredentials([string(credentialsId: 'git', variable: 'GIT_ACCESS_TOKEN')]) {
                         // Set the Git URL with the access token as part of the URL
-                        def gitUrlWithToken = "https://waverlite:${GIT_ACCESS_TOKEN}@github.com/waverlite/Core.git"
+                        def gitUrlWithToken = "https://str:${GIT_ACCESS_TOKEN}@github.com/str/Core.git"
         
                         // Checkout code from the Git repository
                         checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: gitUrlWithToken]]])
@@ -46,7 +46,7 @@ pipeline {
             steps{
                     
                 sh 'docker build --no-cache --tag core_api:latest .'
-                sh 'docker tag core_api:latest 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com'
+                sh 'docker tag core_api:latest 4567898456765.dkr.ecr.eu-west-2.amazonaws.com/api-com'
                 
               
            }
@@ -54,16 +54,16 @@ pipeline {
 
         stage('upload image to Amazon ECR') {
             steps {
-                //sh 'aws --profile myawswaverliteprofile sts get-caller-identity'
-                sh 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 894303325874.dkr.ecr.eu-west-2.amazonaws.com > /dev/null'
-                sh 'docker push 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+                //sh 'aws --profile myawsprofile sts get-caller-identity'
+                sh 'aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 4567898456765.dkr.ecr.eu-west-1.amazonaws.com > /dev/null'
+                sh 'docker push 4567898456765.dkr.ecr.eu-west-.amazonaws.com/api-com:latest'
                 
             }
         }
 
         stage('remove api core image'){
            steps {
-              sh 'docker rmi -f 894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest'
+              sh 'docker rmi -f 4567898456765.dkr.ecr.eu-west-1.amazonaws.com/api-com:latest'
               sh 'docker rmi -f core_api:latest'
            }
          }
@@ -78,7 +78,7 @@ pipeline {
               sh "kubectl delete pods -n prod -l myapp=delete-me"
 
 
-              sh "helm upgrade --install --force redbiller-stack helm/redbiller-eks-charts --set apicoreimage=894303325874.dkr.ecr.eu-west-2.amazonaws.com/api-core-waverlite-com:latest --namespace prod"
+              sh "helm upgrade --install --force str-stack helm/redbiller-eks-charts --set apicoreimage=4567898456765.dkr.ecr.eu-west-1.amazonaws.com/api-com:latest --namespace prod"
             }
           }
         }
