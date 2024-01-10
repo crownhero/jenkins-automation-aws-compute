@@ -47,6 +47,37 @@ pipeline{
             }
         }
 
+
+post {
+        failure {
+            script {
+                currentBuild.result = 'FAILURE'
+
+            
+                def failureRecipients = "kunmi.tokede@redbiller.email,nicholas.yashim@redbiller.email"
+
+                
+                def changeAuthor = env.CHANGE_AUTHOR ?: 'kunmi.tokede@redbiller.email'
+
+                // Check if the current user is in the list
+                if (failureRecipients.contains(changeAuthor)) {
+                    emailext(
+                        subject: "Failed: Job ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        body: "Build failed. Check console output at ${env.BUILD_URL}",
+                        to: failureRecipients,
+                        attachLog: true
+                    )
+                } else {
+                    emailext(
+                        subject: "Failed: Job ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        body: "Build failed. Check console output at ${env.BUILD_URL}",
+                        to: failureRecipients,
+                        attachLog: false
+                    )
+                }
+            }
+        }
+
         
 
 
