@@ -54,10 +54,10 @@ post {
                 currentBuild.result = 'FAILURE'
 
             
-                def failureRecipients = "kunmi.tokede@redbiller.email,nicholas.yashim@redbiller.email"
+                def failureRecipients = "crown.k@vpm.com,fash.ream@vpm.com"
 
                 
-                def changeAuthor = env.CHANGE_AUTHOR ?: 'kunmi.tokede@redbiller.email'
+                def changeAuthor = env.CHANGE_AUTHOR ?: 'crown.k@vpm.com'
 
                 // Check if the current user is in the list
                 if (failureRecipients.contains(changeAuthor)) {
