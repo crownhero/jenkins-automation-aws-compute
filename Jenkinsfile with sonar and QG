@@ -33,7 +33,36 @@ pipeline {
                 '''
             }
         } 
+     stage('SonarQube Analysis') {
+            environment {
+                scannerHome = tool 'sonar5.0'
+            }
+            steps {
+                withCredentials([string(credentialsId: "sonar-prod-id", variable: 'SONARQUBE_TOKEN')]) {
+                script {
+                    withSonarQubeEnv('sonar-prod') {
+                        sh '''${scannerHome}/bin/sonar-scanner \
+                               -Dsonar.projectKey=api-test \
+                               -Dsonar.sources=. \
+                               -Dsonar.host.url=http://<instance-ip>:9000 \
+                               -Dsonar.token=${SONARQUBE_TOKEN}
+                        '''
 
+                               
+                    }
+                }
+            }
+          }
+        }
+
+        
+     stage('Quality Gates') {
+            steps {
+                timeout (time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+              }
+            }
+        }
 
         stage('Build') {
             steps {
