@@ -56,6 +56,16 @@ pipeline {
                 }
             }
         }
+
+       stage('update ASG') {
+           steps {
+               sh """
+               aws autoscaling update-auto-scaling-group \
+               --auto-scaling-group-name str-com-ASG \
+               --launch-template "LaunchTemplateName=str-com-prod-launch-template, Version=5" 
+               """
+           }
+        }
     }
 
    post {
